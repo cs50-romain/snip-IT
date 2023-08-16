@@ -1,5 +1,5 @@
 # snip-IT
-A Code Snippet Manager CLI Tool
+A Code Snippet Manager CLI Tool - Credits to my amazing girlfriend for the name!
 
 # General
 - Create an array that will hold the different languages
@@ -15,4 +15,3 @@ A Code Snippet Manager CLI Tool
 
 # PS
 This program will be used to practice DSA and Go channels. It will most likely be part of my resume as well:)
-Credits to my amazing girlfriend for the name!
