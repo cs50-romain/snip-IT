@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"encode/json"
+	"encoding/json"
 	"bufio"
 	"fmt"
 	"flag"
@@ -11,12 +11,17 @@ import (
 )
 
 type CodeSnip struct {
-	language string
-	filename string
-	content string
+	Filename string
+	Code []string
+}
+
+type JSON struct {
+	Language string
+	Content CodeSnip
 }
 
 var languages map[string]map[string][]string
+var jsonArray []JSON
 
 func saveLang(lang string) {
 	languages[lang] = make(map[string][]string)
@@ -30,8 +35,43 @@ func deserializeJSON(){
 	
 }
 
-func serializeJSON(langs []string) {
-	
+func serializeJSON(langs map[string]map[string][]string) {
+	for language, nestmap:= range languages{
+		for nestkey, value := range nestmap {
+			codesnip := CodeSnip{
+				Filename: nestkey,
+				Code: value,
+			}
+
+			json := JSON{
+				Language: language,
+				Content: codesnip,
+			}
+			fmt.Println(json.Content)
+			jsonArray = append(jsonArray, json)
+		}
+	}
+
+	for _, jsonObj := range jsonArray {
+		fmt.Println("JSON Object: ", jsonObj)
+		b, err := json.Marshal(jsonObj)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		saveToJSONFile(b)
+	}
+}
+
+func saveToJSONFile(data []byte){
+	fmt.Println(string(data))
+	f, _ := os.Create("data.json")
+	defer f.Close()
+	_, err := f.Write(data)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func gatherContents(scanner *bufio.Scanner) []string{
@@ -78,5 +118,6 @@ func main() {
 	for _, lines := range content {
 		fmt.Println(lines)
 	}
+	serializeJSON(languages)
 }
 
