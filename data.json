@@ -1,1 +1,1 @@
-{"Language":"go","Content":{"Filename":"default.go","Code":["import fmt"]}}
+{"go":[{"Filename":"second.go","Code":["this is actually the first go file but whataver"]}]}
