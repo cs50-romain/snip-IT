@@ -1,1 +1,1 @@
-{"go":[{"Filename":"second.go","Code":["this is actually the first go file but whataver"]}]}
+{"c":{"Files":[{"Filename":"first.c","Code":"some content for first.c"}]},"go":{"Files":[{"Filename":"first.go","Code":"Some content for first.go"},{"Filename":"second.go","Code":"some more content for second.go"}]}}

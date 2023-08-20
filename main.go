@@ -12,29 +12,31 @@ import (
 
 type CodeSnip struct {
 	Filename string
-	Code []string
+	Code string
 }
 
-var languages map[string]map[string][]string
-var jsonmap map[string][]CodeSnip
+var datamap map[string]map[string][]CodeSnip
 
-func saveLang(lang string) {
-	languages[lang] = make(map[string][]string)
-}
+func updateMap(ln string, fn string, data []string) {
+	codesnip := CodeSnip {
+		Filename: fn,
+		Code: strings.Join(data, " "),
+	}
 
-func updateMap(lkey string, fkey string, contents []string) {
-	languages[lkey][fkey] = contents
+	if datamap[ln] == nil {
+		datamap[ln] = make(map[string][]CodeSnip)	
+	}
+
+	datamap[ln]["Files"] = append(datamap[ln]["Files"], codesnip)
 }
 
 func deserializeJSON(filename string){
-	fmt.Println("Got here")
 	jsonContents := readJSON(filename)
 	
-	err := json.Unmarshal(jsonContents, &jsonmap)
+	err := json.Unmarshal(jsonContents, &datamap)
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
-	fmt.Println(jsonmap)
 }
 
 func readJSON(filename string) []byte {
@@ -45,19 +47,8 @@ func readJSON(filename string) []byte {
 	return f
 }
 
-func serializeJSON(langs map[string]map[string][]string) {
-	for language, nestmap:= range languages{
-		for nestkey, value := range nestmap {
-			codesnip := CodeSnip{
-				Filename: nestkey,
-				Code: value,
-			}
-
-			jsonmap[language] = append(jsonmap[language], codesnip)
-		}
-	}
-
-	b, err := json.Marshal(jsonmap)
+func serializeJSON(data map[string]map[string][]CodeSnip) {
+	b, err := json.Marshal(datamap)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +65,7 @@ func saveToJSONFile(data []byte){
 	}
 }
 
-func gatherFiless(scanner *bufio.Scanner) []string{
+func getInput(scanner *bufio.Scanner) []string{
 	var lines []string
 	for {
 		fmt.Print("> ")
@@ -94,34 +85,37 @@ func gatherFiless(scanner *bufio.Scanner) []string{
 	return lines
 }
 
-func getFiles(lkey string, fkey string) []string{
-	return languages[lkey][fkey]
+func getContents(ln string, fn string) string {
+	array := datamap[ln]["Files"]
+	for _, data := range array {
+		if data.Filename == fn {
+			return data.Code
+		}
+	}
+	return "File Not Found" 
 }
 
 func main() {
-	languages = make(map[string]map[string][]string)
-	jsonmap = make(map[string][]CodeSnip)
-
+	datamap = make(map[string]map[string][]CodeSnip)
+	
 	var lanFlag = flag.String("l", "Go", "Choose language to load/save code snippet")
 	var sFlag = flag.Bool("s", false, "Save file")
 	var fFlag = flag.String("f", "default.txt", "Specify filename")
 	flag.Parse()
 
-	if *sFlag == true {
-		saveLang(*lanFlag)
-		fmt.Println("Input text (q to quit):")
-		updateMap(*lanFlag, *fFlag, gatherFiless(bufio.NewScanner(os.Stdin)))
-		serializeJSON(languages)
-	} else {
-		// Populate map fro json data
-		deserializeJSON("data.json")
-
-		// Get desired Code Snippet
-		content := getFiles(*lanFlag, *fFlag)
-	
-		for _, lines := range content {
-			fmt.Println(lines)
-		}
+	deserializeJSON("data.json")
+	err := os.Truncate("data.json", 0)
+	if err != nil {
+		fmt.Println(err)
 	}
-}
 
+	if *sFlag == true {
+		fmt.Println("Input text (q to quit):")
+		code := getInput(bufio.NewScanner(os.Stdin))
+		updateMap(*lanFlag, *fFlag, code)
+	}else {
+		fmt.Println(getContents(*lanFlag, *fFlag))
+	}
+
+	serializeJSON(datamap)
+}
