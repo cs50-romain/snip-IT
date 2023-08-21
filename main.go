@@ -17,6 +17,17 @@ type CodeSnip struct {
 
 var datamap map[string]map[string][]CodeSnip
 
+func checkFileExistence(ln string, fn string) bool {
+	data := datamap[ln]["Files"]
+
+	for _, value := range data {
+		if value.Filename == fn {
+			return true
+		}
+	}
+	return false
+}
+
 func updateMap(ln string, fn string, data []string) {
 	codesnip := CodeSnip {
 		Filename: fn,
@@ -25,6 +36,11 @@ func updateMap(ln string, fn string, data []string) {
 
 	if datamap[ln] == nil {
 		datamap[ln] = make(map[string][]CodeSnip)	
+	}
+
+	if checkFileExistence(ln, fn) {
+		fmt.Println("File already exists")
+		return
 	}
 
 	datamap[ln]["Files"] = append(datamap[ln]["Files"], codesnip)
@@ -70,7 +86,7 @@ func getInput(scanner *bufio.Scanner) []string{
 	for {
 		fmt.Print("> ")
 		scanner.Scan()
-		line := scanner.Text()
+		line := scanner.Text() + "\n"
 
 		if strings.ToLower(strings.TrimSpace(line)) == "q" {
 			break
