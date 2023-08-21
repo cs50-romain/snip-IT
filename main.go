@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"bufio"
 	"fmt"
-	"flag"
 	"log"
 	"os"
 	"strings"
@@ -13,6 +12,12 @@ import (
 type CodeSnip struct {
 	Filename string
 	Code string
+}
+
+type MyError struct{}
+
+func (e *MyError) Error() string {
+	return "Invalid command"
 }
 
 var datamap map[string]map[string][]CodeSnip
@@ -84,7 +89,7 @@ func saveToJSONFile(data []byte){
 func getInput(scanner *bufio.Scanner) []string{
 	var lines []string
 	for {
-		fmt.Print("> ")
+		fmt.Print(">> ")
 		scanner.Scan()
 		line := scanner.Text() + "\n"
 
@@ -111,27 +116,59 @@ func getContents(ln string, fn string) string {
 	return "File Not Found" 
 }
 
+func parseCmd(input string) ([]string, error) {
+	input = strings.TrimSuffix(input, "\n")
+
+	args := strings.Split(input, " ")
+	cmd := args[0]
+
+	if cmd != "get" && cmd != "save" && cmd != "exit" {
+		return nil, &MyError{}
+	}
+
+	return args, nil 
+}
+
 func main() {
 	datamap = make(map[string]map[string][]CodeSnip)
 	
-	var lanFlag = flag.String("l", "Go", "Choose language to load/save code snippet")
-	var sFlag = flag.Bool("s", false, "Save file")
-	var fFlag = flag.String("f", "default.txt", "Specify filename")
-	flag.Parse()
-
 	deserializeJSON("data.json")
 	err := os.Truncate("data.json", 0)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	if *sFlag == true {
-		fmt.Println("Input text (q to quit):")
-		code := getInput(bufio.NewScanner(os.Stdin))
-		updateMap(*lanFlag, *fFlag, code)
-	}else {
-		fmt.Println(getContents(*lanFlag, *fFlag))
-	}
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("> ")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 
+		args, error := parseCmd(input)
+		if error != nil {
+			fmt.Println(error)
+		} else {
+			cmd := args[0]
+
+			if cmd == "exit" {
+				fmt.Println("[!] Quitting...")
+				serializeJSON(datamap)
+				os.Exit(0)
+			}
+
+			ln := args[1]
+			fn := args[2]
+	
+			if cmd == "save" {
+				fmt.Println("Input text (q to quit):")
+				code := getInput(bufio.NewScanner(os.Stdin))
+				updateMap(ln, fn, code)
+			} else if cmd == "get" {
+				fmt.Println(getContents(ln, fn))
+			} 
+		}
+	}
 	serializeJSON(datamap)
 }
