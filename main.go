@@ -106,6 +106,17 @@ func getInput(scanner *bufio.Scanner) []string{
 	return lines
 }
 
+func getClosestMatch(arr []CodeSnip, fn string) []string {
+	var pfiles []string
+	for _, string := range arr {
+		pmatch := string.Filename[:5]
+		if fn[:5] == pmatch {
+			pfiles = append(pfiles, string.Filename)
+		}
+	}
+	return pfiles
+}
+
 func getContents(ln string, fn string) string {
 	array := datamap[ln]["Files"]
 	for _, data := range array {
@@ -113,6 +124,12 @@ func getContents(ln string, fn string) string {
 			return data.Code
 		}
 	}
+
+	pfiles := getClosestMatch(array, fn)
+	if pfiles != nil {
+		return "Here are possible matches: " + strings.Join(pfiles, " ")
+	}
+
 	return "File Not Found" 
 }
 
