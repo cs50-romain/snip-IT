@@ -21,6 +21,7 @@ func (e *MyError) Error() string {
 }
 
 var datamap map[string]map[string][]CodeSnip
+var jsonfile string
 
 func checkFileExistence(ln string, fn string) bool {
 	data := datamap[ln]["Files"]
@@ -77,7 +78,7 @@ func serializeJSON(data map[string]map[string][]CodeSnip) {
 }
 
 func saveToJSONFile(data []byte){
-	f, _ := os.OpenFile("data.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY,0644)
+	f, _ := os.OpenFile(jsonfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY,0644)
 	defer f.Close()
 	_, err := f.Write(data)
 
@@ -109,9 +110,11 @@ func getInput(scanner *bufio.Scanner) []string{
 func getClosestMatch(arr []CodeSnip, fn string) []string {
 	var pfiles []string
 	for _, string := range arr {
-		pmatch := string.Filename[:5]
-		if fn[:5] == pmatch {
-			pfiles = append(pfiles, string.Filename)
+		pmatch := string.Filename[:4]
+		if len(fn) > 3 {
+			if fn[:4] == pmatch {
+				pfiles = append(pfiles, string.Filename)
+			}
 		}
 	}
 	return pfiles
@@ -148,9 +151,10 @@ func parseCmd(input string) ([]string, error) {
 
 func main() {
 	datamap = make(map[string]map[string][]CodeSnip)
+	jsonfile = "/home/lettuce/snip-IT/data.json"
 	
-	deserializeJSON("data.json")
-	err := os.Truncate("data.json", 0)
+	deserializeJSON(jsonfile)
+	err := os.Truncate(jsonfile, 0)
 	if err != nil {
 		fmt.Println(err)
 	}

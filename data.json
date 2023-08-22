@@ -1,0 +1,1 @@
+{"go":{"Files":[{"Filename":"appendtofile.go","Code":"f, err := os.OpenFile(\"filename.log\", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) if err != nil { \tfmt.Prinln(err) }"},{"Filename":"removevalueatindex.go","Code":"slice := {1,2,3,4} slice = append(slice[:idx], slice[idx+1:]...)"},{"Filename":"test2.go","Code":"this is code for test2.go\n"}]}}
