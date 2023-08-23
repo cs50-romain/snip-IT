@@ -169,7 +169,7 @@ func printASCIIArt(){
    |\_________\|__| \|__|\|__|\|__|                   \|__|    \|__|
    \|_________|                                                     
                                `
-	fmt.Println(asciiArt)
+	fmt.Println("\033[33m" + asciiArt + "\033[0m")
 }
 
 func main() {
@@ -220,7 +220,7 @@ func main() {
 				code := getInput(bufio.NewScanner(os.Stdin))
 				updateMap(ln, fn, code)
 			} else if cmd == "get" {
-				fmt.Println(getContents(ln, fn))
+				fmt.Println("\033[33m" + getContents(ln, fn) + "\033[0m")
 			} 
 		}
 	}
