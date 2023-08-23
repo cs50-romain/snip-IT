@@ -149,7 +149,17 @@ func parseCmd(input string) ([]string, error) {
 	return args, nil 
 }
 
-func main() {
+func isExist(fn string) bool {
+	f, err := os.Open(fn)
+	defer f.Close()
+
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func printASCIIArt(){
 	asciiArt := ` ________  ________   ___  ________                ___  _________   
 |\   ____\|\   ___  \|\  \|\   __  \              |\  \|\___   ___\ 
 \ \  \___|\ \  \\ \  \ \  \ \  \|\  \ ____________\ \  \|___ \  \_| 
@@ -159,16 +169,27 @@ func main() {
    |\_________\|__| \|__|\|__|\|__|                   \|__|    \|__|
    \|_________|                                                     
                                `
-	
 	fmt.Println(asciiArt)
+}
+
+func main() {
+	printASCIIArt()
 
 	datamap = make(map[string]map[string][]CodeSnip)
 	jsonfile = "/home/lettuce/snip-IT/data.json"
 	
-	deserializeJSON(jsonfile)
-	err := os.Truncate(jsonfile, 0)
-	if err != nil {
-		fmt.Println(err)
+	if isExist(jsonfile) {
+		deserializeJSON(jsonfile)
+		err := os.Truncate(jsonfile, 0)
+		if err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		f, error := os.Create("data.json")
+		defer f.Close()
+		if error != nil {
+			fmt.Println(error)
+		}
 	}
 
 	reader := bufio.NewReader(os.Stdin)
